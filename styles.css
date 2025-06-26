@@ -229,16 +229,153 @@ html {
 .canvas-area {
   flex: 1;
   position: relative;
+  background: #1a1a2e;
+  overflow: hidden;
+  cursor: default;
 }
 
 #drawflow {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
-  background: #2d2f2e !important;
-  background-image: radial-gradient(circle, #595b5a 0.7px, transparent 0.7px) !important;
-  background-size: 22px 22px !important;
-  background-position: 0 0 !important;
-  padding: 60px 0;
+  background-image: radial-gradient(circle, #f0f0f0 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: 0 0;
+  transition: background-position 0.1s ease;
+}
+
+#node-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: auto;
+}
+
+#connections-svg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Ensure nodes are properly positioned */
+.wechat-custom-node {
+  position: absolute;
+  z-index: 3;
+  pointer-events: auto;
+}
+
+/* Canvas panning cursor states */
+.canvas-area.panning {
+  cursor: grabbing !important;
+}
+
+.canvas-area.can-pan {
+  cursor: grab;
+}
+
+/* Ensure toolbar stays on top */
+.canvas-fab-toolbar {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fab-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #1f2937;
+  border: 1px solid #374151;
+  color: #e2e8f0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.fab-btn:hover {
+  background: #374151;
+  border-color: #4b5563;
+  transform: scale(1.05);
+}
+
+/* Ensure sidebar stays on top */
+.components-sidebar {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 400px;
+  height: 100vh;
+  background: #1a1a2e;
+  border-left: 1px solid #2d2d44;
+  padding: 24px;
+  box-sizing: border-box;
+  transition: right 0.3s ease;
+  z-index: 1000;
+  overflow-y: auto;
+}
+
+.components-sidebar.sidebar-visible {
+  right: 0;
+}
+
+.sidebar-toggle {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #8b5cf6;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  transition: all 0.2s ease;
+  z-index: 1001;
+}
+
+.sidebar-toggle:hover {
+  background: #7c3aed;
+  transform: scale(1.05);
+  box-shadow: 0 6px 16px rgba(139, 92, 246, 0.4);
+}
+
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 999;
+}
+
+.sidebar-overlay.overlay-visible {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Drawflow Node Styling */
