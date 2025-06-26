@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DotFlow - Custom</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="node-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="app-header"></div>
+        <div class="canvas-area" id="canvas-area" style="position:relative; width:100vw; height:100vh;">
+            <div class="canvas-fab-toolbar">
+                <button class="fab-btn" id="fit-btn" title="Fit to screen"><i class="fa-solid fa-up-right-and-down-left-from-center"></i></button>
+                <button class="fab-btn" id="zoom-in-btn" title="Zoom in"><i class="fa-solid fa-magnifying-glass-plus"></i></button>
+                <button class="fab-btn" id="zoom-out-btn" title="Zoom out"><i class="fa-solid fa-magnifying-glass-minus"></i></button>
+                <button class="fab-btn" id="reset-btn" title="Reset"><i class="fa-solid fa-rotate-left"></i></button>
+            </div>
+            <div id="drawflow">
+                <svg id="connections-svg" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;"></svg>
+                <div class="node-area" id="node-area"></div>
+            </div>
+        </div>
+        <!-- Sidebar and other UI remain unchanged -->
+        <div class="components-sidebar sidebar-visible">
+            <h3 class="section-title">What happens next?</h3>
+            <div class="flex items-center w-full rounded-xl border-2 border-indigo-500 bg-[#393a3c] px-4 py-2 mb-7">
+                <i class="fa-solid fa-magnifying-glass text-gray-300 text-lg mr-3"></i>
+                <input
+                    class="bg-transparent outline-none border-none text-white placeholder:text-gray-300 w-full"
+                    type="text"
+                    placeholder="Search nodes..."
+                />
+            </div>
+
+            <div class="component-item" draggable="true" ondragstart="drag(event)" data-node="ChatMessageTrigger">
+                <span class="component-icon"><i class="fa-solid fa-comments"></i></span>
+                <div>
+                    <div class="component-title">When Chat Message Received</div>
+                    <div class="component-item-description">Runs the flow when a user sends a chat message. For use with AI nodes.</div>
+                </div>
+            </div>
+            <div class="component-item" draggable="true" ondragstart="drag(event)" data-node="Switch">
+                <span class="component-icon"><i class="fa-solid fa-repeat" style="color: #3b82f6;"></i></span>
+                <div>
+                    <div class="component-title">Switch</div>
+                    <div class="component-item-description">Routes items depending on defined expression or rules</div>
+                </div>
+            </div>
+            <div class="component-item" draggable="true" ondragstart="drag(event)" data-node="EditFields">
+                <span class="component-icon"><i class="fa-solid fa-pen" style="color: #8b5cf6;"></i></span>
+                <div>
+                    <div class="component-title">Edit Fields</div>
+                    <div class="component-item-description">Modify, Add or Remove item fields.</div>
+                </div>
+            </div>
+            <div class="component-item" draggable="true" ondragstart="drag(event)" data-node="Filter">
+                <span class="component-icon"><i class="fa-solid fa-filter" style="color: #3b82f6;"></i></span>
+                <div>
+                    <div class="component-title">Filter</div>
+                    <div class="component-item-description">Remove items matching a condition.</div>
+                </div>
+            </div>
+            <div class="component-item" draggable="true" ondragstart="drag(event)" data-node="CustomerSupportAgent">
+                <span class="component-icon">👩‍💼</span>
+                <div>
+                    <div class="component-title">Customer Support Agent</div>
+                    <div class="component-item-description">Runs the flow when a user sends a chat message. For use with AI nodes.</div>
+                </div>
+            </div>
+            <div class="component-item" draggable="true" ondragstart="drag(event)" data-node="GmailTrigger">
+                <span class="component-icon"><i class="fa-solid fa-envelope"></i></span>
+                <div>
+                    <div class="component-title">Gmail Trigger</div>
+                    <div class="component-item-description">Runs the flow when a user sends a chat message. For use with AI nodes.</div>
+                </div>
+            </div>
+            <div class="component-item" draggable="true" ondragstart="drag(event)" data-node="Embedding">
+                <span class="component-icon"><i class="fa-solid fa-code"></i></span>
+                <div>
+                    <div class="component-title">Embedding</div>
+                    <div class="component-item-description">Generates text embeddings from input data for use in search or analysis.</div>
+                </div>
+            </div>
+            <div class="component-item" draggable="true" ondragstart="drag(event)" data-node="VectorStore">
+                <span class="component-icon"><i class="fa-solid fa-layer-group"></i></span>
+                <div>
+                    <div class="component-title">Vector Store</div>
+                    <div class="component-item-description">Store and retrieve data from a vector database.</div>
+                </div>
+            </div>
+        </div>
+        <button class="sidebar-toggle" onclick="toggleSidebar()">
+            <i class="fas fa-plus"></i>
+        </button>
+        <div class="sidebar-overlay"></div>
+    </div>
+    <!-- Node UI Start -->
+    <div class="custom-node-container">
+        <div class="custom-node">
+            <span class="chat-icon">
+                <!-- SVG for WeChat-like icon -->
+                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="24" cy="24" r="24" fill="#fff" fill-opacity="0"/>
+                    <ellipse cx="22" cy="22" rx="14" ry="12" fill="#fff" stroke="#BDBDBD" stroke-width="2"/>
+                    <ellipse cx="32" cy="30" rx="8" ry="7" fill="#fff" stroke="#BDBDBD" stroke-width="2"/>
+                    <circle cx="18" cy="22" r="2" fill="#BDBDBD"/>
+                    <circle cx="26" cy="22" r="2" fill="#BDBDBD"/>
+                    <circle cx="30" cy="30" r="1.5" fill="#BDBDBD"/>
+                    <circle cx="35" cy="30" r="1.5" fill="#BDBDBD"/>
+                </svg>
+            </span>
+            <div class="node-connector"></div>
+        </div>
+        <div class="custom-node-label">When Chat<br>Message Received</div>
+    </div>
+    <!-- Node UI End -->
+    <script src="script.js"></script>
+</body>
+</html>
