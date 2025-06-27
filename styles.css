@@ -1564,3 +1564,48 @@ html {
 .node-menu .node-menu-delete:hover {
   color: #e53e3e !important;
 }
+
+/* Context Menu Styles */
+.context-menu {
+  position: absolute;
+  background: #23262b;
+  color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  padding: 8px 0;
+  min-width: 180px;
+  z-index: 1000;
+  font-family: inherit;
+}
+.context-menu .menu-item {
+  padding: 8px 24px 8px 16px;
+  cursor: pointer;
+}
+
+/* Connection delete button styles */
+.delete-conn-btn {
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.delete-conn-btn:hover {
+  transform: scale(1.1);
+  background: #b91c1c !important;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.4) !important;
+}
+
+.delete-conn-btn:active {
+  transform: scale(0.95);
+}
+
+/* Selected connection styles */
+.connection-selected {
+  stroke: #d97706 !important;
+  stroke-width: 4 !important;
+}
+
+/* Connection hover styles */
+.connection-hover {
+  stroke: #9ca3af !important;
+  stroke-width: 4 !important;
+}

@@ -106,10 +106,25 @@ let connectionStart = null;
 // --- Delete icon logic ---
 let currentDeleteIcon = null;
 let currentDeleteConnIndex = null;
+let selectedConnection = null;
 
 function showDeleteIconForLine(pathElement, connIndex) {
+  console.log("showDeleteIconForLine called", connIndex);
   // If there is any existing trash icon, remove it first
   removeDeleteIcon();
+  
+  // Remove previous selection
+  if (selectedConnection) {
+    selectedConnection.style.stroke = "#cfd8dc";
+    selectedConnection.style.strokeWidth = "3";
+    selectedConnection = null;
+  }
+  
+  // Highlight the selected connection in dark yellow
+  pathElement.style.stroke = "#d97706"; // Dark yellow/orange color
+  pathElement.style.strokeWidth = "4";
+  selectedConnection = pathElement;
+  
   //gets the main SVG element where connections and icons are shown.
   const svg = document.getElementById("connections-svg");
   const bbox = pathElement.getBBox();
@@ -121,21 +136,22 @@ function showDeleteIconForLine(pathElement, connIndex) {
     "http://www.w3.org/2000/svg",
     "foreignObject"
   );
-  foreignObject.setAttribute("x", midX - 12);
-  foreignObject.setAttribute("y", midY - 12);
-  foreignObject.setAttribute("width", 24);
-  foreignObject.setAttribute("height", 24);
+  foreignObject.setAttribute("x", midX - 15);
+  foreignObject.setAttribute("y", midY - 15);
+  foreignObject.setAttribute("width", 30);
+  foreignObject.setAttribute("height", 30);
   foreignObject.style.overflow = "visible";
   //This makes sure the trash icon is clickable.
   foreignObject.style.pointerEvents = "auto";
-  // Add the icon HTML
-  foreignObject.innerHTML = `<div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#fff;border-radius:50%;box-shadow:0 1px 4px #0002;" class="delete-conn-btn"><i class='fa fa-trash' style='color:#e53e3e;font-size:16px;'></i></div>`;
+  // Add the icon HTML with better styling
+  foreignObject.innerHTML = `<div style="width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#dc2626;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,0.3);border:2px solid #fff;" class="delete-conn-btn"><i class='fa fa-trash' style='color:#fff;font-size:14px;'></i></div>`;
   foreignObject.querySelector(".delete-conn-btn").onclick = function (e) {
     e.stopPropagation();
     deleteConnection(connIndex);
     removeDeleteIcon();
   };
   svg.appendChild(foreignObject);
+  console.log("Delete icon appended to SVG");
   currentDeleteIcon = foreignObject;
   currentDeleteConnIndex = connIndex;
 }
@@ -145,12 +161,21 @@ function removeDeleteIcon() {
   if (currentDeleteIcon && currentDeleteIcon.parentNode) {
     currentDeleteIcon.parentNode.removeChild(currentDeleteIcon);
   }
+  
+  // Reset the connection highlighting
+  if (selectedConnection) {
+    selectedConnection.style.stroke = "#cfd8dc";
+    selectedConnection.style.strokeWidth = "3";
+    selectedConnection = null;
+  }
+  
   // Reset the global references to indicate no delete icon is currently shown
   currentDeleteIcon = null;
   currentDeleteConnIndex = null;
 }
 
 function deleteConnection(connIndex) {
+  console.log("deleteConnection called", connIndex);
   // Check if the provided index is valid and a connection exists at that index
   if (connIndex != null && connections[connIndex]) {
     // Remove the connection from the connections array
@@ -744,10 +769,29 @@ function updateConnections() {
     path.setAttribute("marker-end", "url(#arrowhead)");
     path.style.pointerEvents = "auto";
     path.style.cursor = "pointer";
+    path.style.transition = "stroke 0.2s ease, stroke-width 0.2s ease";
+    
+    // Add hover effect
+    path.addEventListener("mouseenter", function() {
+      if (path !== selectedConnection) {
+        path.style.stroke = "#9ca3af";
+        path.style.strokeWidth = "4";
+      }
+    });
+    
+    path.addEventListener("mouseleave", function() {
+      if (path !== selectedConnection) {
+        path.style.stroke = "#cfd8dc";
+        path.style.strokeWidth = "3";
+      }
+    });
+    
     path.addEventListener("click", function (e) {
       e.stopPropagation();
+      console.log("Connection clicked", idx);
       showDeleteIconForLine(path, idx);
     });
+    
     svg.appendChild(path);
   });
   // Remove icon if clicking elsewhere
@@ -841,6 +885,17 @@ window.addEventListener("DOMContentLoaded", function () {
   const nodeArea = document.getElementById("node-area");
   nodeArea.addEventListener("drop", window.drop);
   nodeArea.addEventListener("dragover", window.allowDrop);
+  
+  // Add global click handler to remove delete icon when clicking outside
+  document.addEventListener("click", function(e) {
+    const svg = document.getElementById("connections-svg");
+    const deleteBtn = document.querySelector(".delete-conn-btn");
+    
+    // If clicking outside SVG or not on delete button, remove delete icon
+    if (!svg.contains(e.target) || (deleteBtn && !deleteBtn.contains(e.target))) {
+      removeDeleteIcon();
+    }
+  });
   
   // Remove the automatically created node - canvas should start empty
   // const nodeArea = document.getElementById("node-area");
@@ -1006,19 +1061,75 @@ function fitToScreen() {
 
 // --- Node menu logic ---
 let currentOpenNodeMenu = null;
+let currentContextMenu = null;
+
 function enableNodeMenu(node) {
   const menu = node.querySelector(".node-menu");
   if (!menu) return;
-  // Show menu on node click
+  // Show menu on node click (except for three-dot)
   node.addEventListener("click", function (e) {
+    if (e.target.classList.contains("fa-ellipsis") || e.target.classList.contains("fa-ellipsis-h")) {
+      // Handled below
+      return;
+    }
     e.stopPropagation();
-    // Hide any other open menu
     if (currentOpenNodeMenu && currentOpenNodeMenu !== menu) {
       currentOpenNodeMenu.style.display = "none";
     }
     menu.style.display = "flex";
     currentOpenNodeMenu = menu;
   });
+
+  // Show context menu on three-dot click
+  const ellipsis = menu.querySelector(".fa-ellipsis") || menu.querySelector(".fa-ellipsis-h");
+  if (ellipsis) {
+    ellipsis.addEventListener("click", function (e) {
+      e.stopPropagation();
+      // Remove any existing context menu
+      if (currentContextMenu) {
+        currentContextMenu.remove();
+        currentContextMenu = null;
+      }
+      // Build context menu
+      const contextMenu = document.createElement("div");
+      contextMenu.className = "context-menu";
+      contextMenu.style.position = "absolute";
+      contextMenu.style.zIndex = 2000;
+      contextMenu.style.display = "block";
+      contextMenu.innerHTML = `
+        <div class="menu-item">Open...</div>
+        <div class="menu-item">Test step</div>
+        <div class="menu-item">Rename <span class="shortcut">F2</span></div>
+        <div class="menu-item">Deactivate <span class="shortcut">F3</span></div>
+        <div class="menu-item">Copy <span class="shortcut">Ctrl+C</span></div>
+        <div class="menu-item">Duplicate <span class="shortcut">Ctrl+D</span></div>
+        <div class="menu-item">Select all <span class="shortcut">Ctrl+A</span></div>
+        <div class="menu-item">Clear selection</div>
+        <div class="menu-item delete">Delete <span class="shortcut">Del</span></div>
+      `;
+      // Position next to ellipsis
+      const rect = ellipsis.getBoundingClientRect();
+      contextMenu.style.left = rect.left + window.scrollX + "px";
+      contextMenu.style.top = rect.bottom + window.scrollY + "px";
+      document.body.appendChild(contextMenu);
+      currentContextMenu = contextMenu;
+      // Hide on click outside
+      setTimeout(() => {
+        document.addEventListener("click", hideContextMenu, { once: true });
+      }, 0);
+      function hideContextMenu(ev) {
+        if (currentContextMenu) {
+          currentContextMenu.remove();
+          currentContextMenu = null;
+        }
+      }
+      // Prevent closing when clicking inside
+      contextMenu.addEventListener("click", function(ev) {
+        ev.stopPropagation();
+      });
+    });
+  }
+
   // Hide menu when clicking elsewhere
   document.addEventListener("click", function hideMenu(e) {
     if (!node.contains(e.target)) {
